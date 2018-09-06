@@ -27,42 +27,12 @@ namespace StructuredLogLines
 
         private string GetLogLevelString(LogLevel logLevel)
         {
-            switch (logLevel)
-            {
-                case LogLevel.Trace:
-                case LogLevel.Debug:
-                    return "debug";
-                case LogLevel.Information:
-                    return "info";
-                case LogLevel.Warning:
-                    return "warn";
-                case LogLevel.Error:
-                    return "error";
-                case LogLevel.Critical:
-                    return "critical";
-            }
-
-            return "info";
+            return logLevel.ToString().ToLower();
         }
 
         private int GetLogLevelSeverity(LogLevel logLevel)
         {
-            switch (logLevel)
-            {
-                case LogLevel.Trace:
-                case LogLevel.Debug:
-                    return 7;
-                case LogLevel.Information:
-                    return 6;
-                case LogLevel.Warning:
-                    return 4;
-                case LogLevel.Error:
-                    return 3;
-                case LogLevel.Critical:
-                    return 2;
-            }
-
-            return 6; // info
+            return (int)logLevel;
         }
     }
 }
