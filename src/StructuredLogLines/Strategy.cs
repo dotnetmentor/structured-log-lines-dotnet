@@ -27,7 +27,7 @@ namespace StructuredLogLines
             if (prefix == JsonPathPrefix.Context)
             {
                 var type = obj.GetType();
-                if (type.IsClass)
+                if (type.IsClass && !type.FullName.StartsWith("System."))
                 {
                     return String.Join(".", SplitCamelCase(type.Name));
                 }
@@ -43,7 +43,7 @@ namespace StructuredLogLines
                 }
 
                 var type = obj.GetType();
-                if (type.IsClass)
+                if (type.IsClass && !type.FullName.StartsWith("System."))
                 {
                     return String.Join(".", SplitCamelCase(type.Name));
                 }
