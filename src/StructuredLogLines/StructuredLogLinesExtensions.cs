@@ -25,6 +25,8 @@ namespace StructuredLogLines
                 builder.AddProvider(new StructuredLogLinesLoggerProvider(config));
             }
 
+            builder.AddFilter<StructuredLogLinesLoggerProvider>(null, config.MinimumLogLevel);
+
             return builder;
         }
     }
