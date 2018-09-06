@@ -129,9 +129,10 @@ namespace StructuredLogLines
                 Console.ForegroundColor = GetLogLevelColor(logLevel);
             }
 
-            switch (logLine.Severity <= 3)
+            switch (logLevel)
             {
-                case true:
+                case LogLevel.Error:
+                case LogLevel.Critical:
                     Console.Error.WriteLine(json);
                     break;
                 default:
@@ -150,8 +151,9 @@ namespace StructuredLogLines
             switch (logLevel)
             {
                 case LogLevel.Trace:
-                case LogLevel.Debug:
                     return ConsoleColor.Gray;
+                case LogLevel.Debug:
+                    return ConsoleColor.White;
                 case LogLevel.Information:
                     return ConsoleColor.Green;
                 case LogLevel.Warning:
@@ -162,7 +164,7 @@ namespace StructuredLogLines
                     return ConsoleColor.DarkRed;
             }
 
-            return ConsoleColor.Gray;
+            return ConsoleColor.White;
         }
     }
 }
