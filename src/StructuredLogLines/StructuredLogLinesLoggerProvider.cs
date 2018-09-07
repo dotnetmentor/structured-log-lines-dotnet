@@ -20,10 +20,7 @@ namespace StructuredLogLines
             return _loggers.GetOrAdd(categoryName, name =>
             {
                 var logger = new StructuredLogLinesLogger(name, _config);
-                if (_config.LoggerCreatedHandler != null)
-                {
-                    _config.LoggerCreatedHandler.Invoke(logger);
-                }
+                _config.Conventions.OnLoggerCreated?.Invoke(logger);
                 return logger;
             });
         }

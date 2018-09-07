@@ -36,10 +36,7 @@ namespace StructuredLogLines
 
         public IDisposable BeginScope<TState>(TState state) => ScopeProvider?.Push(state) ?? NullScope.Instance;
 
-        public bool IsEnabled(LogLevel logLevel)
-        {
-            return logLevel >= Config.MinimumLogLevel;
-        }
+        public bool IsEnabled(LogLevel logLevel) => logLevel >= Config.MinimumLogLevel;
 
         public void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception exception, Func<TState, Exception, string> formatter)
         {
@@ -64,64 +61,57 @@ namespace StructuredLogLines
                 message = string.Empty;
             }
 
-            var logLine = new LogLine(logLevel, message);
+            var logLine = new LogLine(Config.Conventions, logLevel, message);
+            var context = new List<object>();
 
             ScopeProvider?.ForEachScope((scope, data) =>
             {
-                var scopeType = scope.GetType();
-                if (scopeType.IsClass)
+                if (scope == null)
                 {
-                    var path = Config.JsonPathResolver.Invoke(JsonPathPrefix.Context, scope);
-                    logLine.WithContext(path, scope);
+                    return;
+                }
+
+                data.Add(scope);
+            }, context);
+
+
+            foreach (var item in context)
+            {
+                var formattedLogValues = ReflectionHelper.TryGetAllFormattedLogValues(item);
+                if (formattedLogValues != null)
+                {
+                    foreach (var lv in formattedLogValues)
+                    {
+                        logLine.WithContext(lv);
+                    }
                 }
                 else
                 {
-                    IDictionary<string, object> dictionary = null;
-
-                    if (scope is IEnumerable<KeyValuePair<string, object>> properties)
-                    {
-                        dictionary = properties.ToDictionary(p => p.Key, p => p.Value);
-                    }
-
-                    if (scope is IDictionary<string, object> kvps)
-                    {
-                        dictionary = kvps;
-                    }
-
-                    if (dictionary != null)
-                    {
-                        data.Add(dictionary);
-                    }
-                    else
-                    {
-                        data.Add(scope);
-                    }
-
-                    var path = Config.JsonPathResolver.Invoke(JsonPathPrefix.Context, scope);
-                    logLine.WithContext(path, data);
+                    logLine.WithContext(item);
                 }
-            }, new List<object>());
+            }
 
             if (exception != null)
             {
-                var path = Config.JsonPathResolver.Invoke(JsonPathPrefix.Event, exception);
-                var error = Config.ExcpetionConverter.Invoke(exception);
-                logLine.WithEvent(path, error);
+                logLine.WithEvent(exception);
             }
             else if (state != null)
             {
-                var formattedLogValues = ReflectionHelper.GetAllFormattedLogValues(state);
+                var formattedLogValues = ReflectionHelper.TryGetAllFormattedLogValues(state);
                 if (formattedLogValues != null)
                 {
-                    foreach (var item in formattedLogValues)
+                    foreach (var lv in formattedLogValues)
                     {
-                        var path = Config.JsonPathResolver.Invoke(JsonPathPrefix.Event, item);
-                        logLine.WithEvent(path, item);
+                        logLine.WithEvent(lv);
                     }
+                }
+                else
+                {
+                    logLine.WithEvent(state);
                 }
             }
 
-            var json = JsonConvert.SerializeObject(logLine, Config.UsePretty ? Formatting.Indented : Formatting.None, Config.JsonSerializerSettings);
+            var json = JsonConvert.SerializeObject(logLine, Config.UsePretty ? Formatting.Indented : Formatting.None, Config.Conventions.JsonSerializerSettings);
             var color = Console.ForegroundColor;
 
             if (Config.UseColor)
