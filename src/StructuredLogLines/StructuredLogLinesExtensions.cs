@@ -6,7 +6,7 @@ namespace StructuredLogLines
 {
     public static class StructuredLogLinesExtensions
     {
-        public static ILoggingBuilder AddStructuredLogLines(this ILoggingBuilder builder, Action<StructuredLogLinesLoggerConfiguration> configure, bool dispose = false)
+        public static ILoggingBuilder AddStructuredLogLines(this ILoggingBuilder builder, Action<StructuredLogLinesLoggerConfiguration> configure = null, bool dispose = false)
         {
             if (builder == null) throw new ArgumentNullException(nameof(builder));
             var config = new StructuredLogLinesLoggerConfiguration();
